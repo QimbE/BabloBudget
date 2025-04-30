@@ -1,7 +1,7 @@
 ### build
 FROM mcr.microsoft.com/dotnet/sdk:9.0 as build
 WORKDIR /sln
-COPY ./*.sln ./*/*.csproj ./
+COPY ./*.sln ./src/*/*.csproj ./
 RUN mkdir src
 RUN for file in $(ls *.csproj); do mkdir -p src/${file%.*}/ && mv $file src/${file%.*}/; done
 

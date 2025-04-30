@@ -1,0 +1,32 @@
+name: Unit Tests
+
+on: 
+  pull_request:
+  workflow_dispatch:
+  push:
+      branches:
+        - main
+
+env:
+  DOTNET_VERSION: "9.0.x"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with: 
+          dotnet-version: '9.0.x'
+      
+      - name: Restore
+        run: dotnet restore ./BabloBudget.sln
+        
+      - name: Build
+        run: dotnet build ./BabloBudget.sln --configuration Release --no-restore
+        
+      - name: Test
+        run: dotnet test ./BabloBudget.sln --configuration Release --no-restore --no-build

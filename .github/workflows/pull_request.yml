@@ -3,9 +3,6 @@ name: Unit Tests
 on: 
   pull_request:
   workflow_dispatch:
-  push:
-      branches:
-        - main
 
 env:
   DOTNET_VERSION: "9.0.x"

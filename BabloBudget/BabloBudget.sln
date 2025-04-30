@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabloBudget", "BabloBudget\BabloBudget.csproj", "{BA366C13-66A6-4771-85C4-AB8D169F6132}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{77581A57-75D9-41FA-AFE4-7706F91ADBC9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{75E47AB5-BC7B-499B-98B6-3D6B536188BC}"
+	ProjectSection(SolutionItems) = preProject
+		..\Dockerfile = ..\Dockerfile
+		..\.dockerignore = ..\.dockerignore
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BA366C13-66A6-4771-85C4-AB8D169F6132}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA366C13-66A6-4771-85C4-AB8D169F6132}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA366C13-66A6-4771-85C4-AB8D169F6132}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA366C13-66A6-4771-85C4-AB8D169F6132}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77581A57-75D9-41FA-AFE4-7706F91ADBC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77581A57-75D9-41FA-AFE4-7706F91ADBC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77581A57-75D9-41FA-AFE4-7706F91ADBC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77581A57-75D9-41FA-AFE4-7706F91ADBC9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

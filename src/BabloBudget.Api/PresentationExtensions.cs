@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
+using Microsoft.OpenApi.MicrosoftExtensions;
 using Microsoft.OpenApi.Models;
 
 namespace BabloBudget.Api;
@@ -79,6 +82,9 @@ public static class PresentationExtensions
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(connectionString));
+
+        services.AddDbContextFactory<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
         
         services.AddIdentity<IdentityUser, IdentityRole>()

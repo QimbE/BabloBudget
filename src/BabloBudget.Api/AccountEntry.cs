@@ -2,8 +2,8 @@
 
 public static class AccountStrategies
 {
-    public static IQueryable<AccountEntryDto> GetAccountEntries(
-        this IQueryable<AccountEntryDto> repository,
+    public static IQueryable<AccountEntry> GetAccountEntries(
+        this IQueryable<AccountEntry> repository,
         Account account,
         DateOnly fromDate,
         DateOnly toDate) =>

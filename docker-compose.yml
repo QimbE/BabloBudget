@@ -15,7 +15,7 @@ services:
 
   db:
     image: postgres:latest
-    container_name: postgre_db
+    container_name: bablobudgetdb
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

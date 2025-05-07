@@ -18,7 +18,7 @@ app.UseSwaggerUI(c =>
 {
     c.OAuthClientId(configuration["Authentication:Google:ClientId"]);
     c.OAuthClientSecret(configuration["Authentication:Google:ClientSecret"]);
-    c.OAuthUsePkce(); // Use PKCE for additional security
+    c.OAuthUsePkce();
 });
 
 app.UseHttpsRedirection();

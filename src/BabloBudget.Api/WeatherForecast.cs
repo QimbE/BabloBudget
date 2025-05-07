@@ -1,4 +1,4 @@
-namespace BabloBudget;
+namespace BabloBudget.Api;
 
 public class WeatherForecast
 {

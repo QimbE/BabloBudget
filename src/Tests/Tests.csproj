@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\BabloBudget\BabloBudget.csproj" />
+      <ProjectReference Include="..\BabloBudget.Api\BabloBudget.Api.csproj" />
     </ItemGroup>
 
 </Project>

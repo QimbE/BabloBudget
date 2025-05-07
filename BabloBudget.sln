@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabloBudget", "src\BabloBudget\BabloBudget.csproj", "{BA366C13-66A6-4771-85C4-AB8D169F6132}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BabloBudget.Api", "src\BabloBudget.Api\BabloBudget.Api.csproj", "{BA366C13-66A6-4771-85C4-AB8D169F6132}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "src\Tests\Tests.csproj", "{77581A57-75D9-41FA-AFE4-7706F91ADBC9}"
 EndProject
@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		.\README.md = .\README.md
 		.\.github\workflows\pull_request.yml = .\.github\workflows\pull_request.yml
 		.\.github\workflows\main.yml = .\.github\workflows\main.yml
+		docker-compose.yml = docker-compose.yml
+		.env = .env
 	EndProjectSection
 EndProject
 Global

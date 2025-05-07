@@ -1,0 +1,46 @@
+using BabloBudget.Api;
+using BabloBudget.Api.Repository;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var configuration = builder.Configuration;
+builder.Services.AddLayers(configuration);
+
+var app = builder.Build();
+
+app.ApplyMigrations();
+
+// Configure the HTTP request pipeline.
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.OAuthClientId(configuration["Authentication:Google:ClientId"]);
+    c.OAuthClientSecret(configuration["Authentication:Google:ClientSecret"]);
+    c.OAuthUsePkce(); // Use PKCE for additional security
+});
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+
+public static class MigrationExtensions
+{
+    public static void ApplyMigrations(this IApplicationBuilder app)
+    {
+        using var scope = app.ApplicationServices.CreateScope();
+
+        using var dbContext = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+        
+        dbContext.Database.Migrate();
+        scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>().LogInformation("Applied migrations");
+    }
+}

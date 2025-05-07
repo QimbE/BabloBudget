@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace BabloBudget.Controllers;
+namespace BabloBudget.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]

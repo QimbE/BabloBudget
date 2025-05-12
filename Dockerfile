@@ -17,7 +17,7 @@ ENTRYPOINT ["dotnet", "test", "-c", "Release", "--no-build"]
 
 ### publish
 FROM build as publish
-RUN dotnet publish "./src/BabloBudget/BabloBudget.csproj" -c Release --output /dist/services --no-restore
+RUN dotnet publish "./src/BabloBudget.Api/BabloBudget.Api.csproj" -c Release --output /dist/services --no-restore
 
 ### services
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS services

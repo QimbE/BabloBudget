@@ -1,0 +1,16 @@
+﻿using BabloBudget.Api.Repository.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace BabloBudget.Api.Repository;
+
+public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser>
+{
+    public ApplicationDbContext (DbContextOptions<ApplicationDbContext > options)
+        : base(options)
+    {
+    }
+    
+    public DbSet<AccountDto> Accounts { get; private set; }
+}

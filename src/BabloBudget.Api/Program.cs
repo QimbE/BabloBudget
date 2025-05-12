@@ -1,5 +1,6 @@
 using BabloBudget.Api;
 using BabloBudget.Api.Repository;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,12 +15,7 @@ app.ApplyMigrations();
 // Configure the HTTP request pipeline.
 
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.OAuthClientId(configuration["Authentication:Google:ClientId"]);
-    c.OAuthClientSecret(configuration["Authentication:Google:ClientSecret"]);
-    c.OAuthUsePkce();
-});
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
@@ -27,6 +23,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapIdentityApi<IdentityUser>();
 
 app.Run();
 

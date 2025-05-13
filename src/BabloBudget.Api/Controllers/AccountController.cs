@@ -1,4 +1,4 @@
-﻿using BabloBudget.Api.Repository;
+using BabloBudget.Api.Repository;
 using BabloBudget.Api.Repository.Models;
 using BabloBudget.Api.Repository.Resilience;
 using Microsoft.AspNetCore.Authorization;

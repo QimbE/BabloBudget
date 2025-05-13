@@ -1,4 +1,4 @@
-﻿namespace BabloBudget.Api.Repository.Models;
+namespace BabloBudget.Api.Repository.Models;
 
 public sealed class AccountDto
 {

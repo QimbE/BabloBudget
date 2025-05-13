@@ -10,6 +10,12 @@ builder.Services.AddLayers(configuration);
 
 var app = builder.Build();
 
+app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+            );
+
 app.ApplyMigrations();
 
 // Configure the HTTP request pipeline.
@@ -19,12 +25,12 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
+app.MapIdentityApi<IdentityUser<Guid>>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapIdentityApi<IdentityUser>();
 
 app.Run();
 

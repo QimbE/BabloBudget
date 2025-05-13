@@ -1,12 +1,9 @@
-﻿using BabloBudget.Api.Repository;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Google;
+using BabloBudget.Api.Repository;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.MicrosoftExtensions;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 
 namespace BabloBudget.Api;
 
@@ -23,12 +20,21 @@ public static class PresentationExtensions
 
         services.AddSwaggerGen(options => {
             options.SwaggerDoc("v1", new() { Title="BabloBudget API", Version="v1" });
+            options.AddSecurityDefinition("oauth2", new()
+            {
+                In = ParameterLocation.Header,
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
+
+            options.OperationFilter<SecurityRequirementsOperationFilter>();
         });
 
         services.AddAuthorization();
 
         services.AddAuthentication()
-            //.AddCookie(IdentityConstants.ApplicationScheme)
             .AddBearerToken(IdentityConstants.BearerScheme);
         
         return services;
@@ -41,8 +47,10 @@ public static class PresentationExtensions
         services.AddDbContextFactory<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
         
-        services.AddIdentity<IdentityUser, IdentityRole>()
+        services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddUserStore<UserStore<IdentityUser<Guid>, IdentityRole<Guid>, ApplicationDbContext, Guid>>()
+            .AddRoleStore<RoleStore<IdentityRole<Guid>, ApplicationDbContext, Guid>>()
             .AddApiEndpoints();
         
         return services;

@@ -1,11 +1,12 @@
-﻿using BabloBudget.Api.Repository.Models;
+﻿using BabloBudget.Api.Repository.Configurations;
+using BabloBudget.Api.Repository.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BabloBudget.Api.Repository;
 
-public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser>
+public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>, IdentityRole<Guid>, Guid>
 {
     public ApplicationDbContext (DbContextOptions<ApplicationDbContext > options)
         : base(options)
@@ -13,4 +14,11 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser>
     }
     
     public DbSet<AccountDto> Accounts { get; private set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.ApplyConfiguration(new AccountConfiguration());
+    }
 }

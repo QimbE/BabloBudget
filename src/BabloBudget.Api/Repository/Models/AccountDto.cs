@@ -14,4 +14,12 @@ public sealed class AccountDto
             Id = account.UserId,
         };
     }
+
+    public Account ToDomainModel()
+    {
+        var money = Money.Create(BasisSum);
+        return Account.Create(
+            money,
+            Id);
+    }
 }

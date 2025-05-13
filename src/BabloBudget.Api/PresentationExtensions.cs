@@ -45,7 +45,8 @@ public static class PresentationExtensions
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         services.AddDbContextFactory<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(connectionString)
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
         
         services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()

@@ -1,4 +1,4 @@
-﻿using BabloBudget.Api.Repository;
+using BabloBudget.Api.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

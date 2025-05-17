@@ -1,4 +1,4 @@
-﻿using BabloBudget.Api;
+﻿using BabloBudget.Api.Domain;
 using Shouldly;
 
 

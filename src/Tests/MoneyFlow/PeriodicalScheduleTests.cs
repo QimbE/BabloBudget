@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using BabloBudget.Api;
+using BabloBudget.Api.Domain;
 using Shouldly;
 
 namespace Tests.MoneyFlow;

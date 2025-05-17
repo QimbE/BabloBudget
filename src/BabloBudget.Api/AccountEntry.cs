@@ -107,10 +107,11 @@ public sealed record PeriodicalSchedule
         Period period,
         IDateTimeProvider dateTimeProvider)
     {
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(startingDateUtc, lastCheckedUtc ?? startingDateUtc);
-        
         if (lastCheckedUtc is not null)
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(startingDateUtc, lastCheckedUtc.Value);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(lastCheckedUtc.Value, dateTimeProvider.UtcNowDateOnly);
+        }
         
         return new(period, startingDateUtc, lastCheckedUtc);
     }

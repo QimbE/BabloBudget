@@ -24,11 +24,6 @@ public sealed record Account
     public Money BasisSum { get; init; }
     
     public Guid UserId { get; init; }
-    
-    // Такто нафиг не надо тут держать ни Entries, ни Flows. Аккаунт - аггрегат, к остальному должен идти через репозитории по логике.
-    // List<AccountEntry> Entries
-    // ...
- 
 
     public static Account Create(
         Money basisSum,
@@ -40,7 +35,7 @@ public sealed record Account
 
 public sealed record MoneyFlow
 {
-    private MoneyFlow(Guid id, Transaction transaction, Schedule schedule)
+    private MoneyFlow(Guid id, Transaction transaction, PeriodicalSchedule schedule)
     {
         Id = id;
         Transaction = transaction;
@@ -49,79 +44,103 @@ public sealed record MoneyFlow
 
     public Guid Id { get; init; }
     public Transaction Transaction { get; init; }
-    
-    // Id скедуле или вообще у скедуле id флоу
-    public Schedule Schedule { get; init; }
+    public PeriodicalSchedule Schedule { get; init; }
+
+    public static MoneyFlow Create(Guid id, Transaction transaction, PeriodicalSchedule schedule)
+    {
+        return new(id, transaction, schedule);
+    }
 }
 
-public abstract record Schedule
+public sealed record PeriodicalSchedule
 {
-    protected Schedule(Guid id, DateOnly startingDateUtc)
-    {
-        Id = id;
-        StartingDateUtc = startingDateUtc;
-    }
-
-    public Guid Id { get; init; }
     public DateOnly StartingDateUtc { get; init; }
     public DateOnly? LastCheckedUtc { get; init; }
-    
-    public abstract bool IsOnTime(IDateTimeProvider dateTimeProvider);
-    
-    public Schedule MarkChecked(IDateTimeProvider dateTimeProvider) =>
-        this with
-        {
-            LastCheckedUtc = DateOnly.FromDateTime(dateTimeProvider.UtcNow)
-        };
 
-    public static Schedule CreatePeriodical(Guid id, DateOnly startingDateUtc, Period period, IDateTimeProvider dateTimeProvider)
-    {
-        var currentDateUtc = DateOnly.FromDateTime(dateTimeProvider.UtcNow);
-
-        if (currentDateUtc > startingDateUtc.AddDays(-1))
-            throw new ArgumentOutOfRangeException(nameof(startingDateUtc), "Starting date is too early");
-
-        return new PeriodicalSchedule(id, startingDateUtc, period);
-    }
-}
-
-internal sealed record PeriodicalSchedule : Schedule
-{
     public Period Period { get; init; }
-    
-    internal PeriodicalSchedule(Guid id, DateOnly startingDateUtc, Period period)
-        : base(id, startingDateUtc)
+
+    private PeriodicalSchedule(
+        Period period,
+        DateOnly startingDateUtc,
+        DateOnly? lastCheckedUtc)
     {
         Period = period;
+        LastCheckedUtc = lastCheckedUtc;
+        StartingDateUtc = startingDateUtc;
     }
+    
+    public PeriodicalSchedule MarkChecked(IDateTimeProvider dateTimeProvider) =>
+        this with
+        {
+            LastCheckedUtc = dateTimeProvider.UtcNowDateOnly
+        };
 
-    public override bool IsOnTime(IDateTimeProvider dateTimeProvider)
+    public bool IsOnTime(IDateTimeProvider dateTimeProvider)
     {
-        var currentDateUtc = DateOnly.FromDateTime(dateTimeProvider.UtcNow);
+        var currentDateUtc = dateTimeProvider.UtcNowDateOnly;
 
         return
             currentDateUtc.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
             - (LastCheckedUtc ?? StartingDateUtc).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
-            >= Period.Span;
+            >= TimeSpan.FromDays(Period.Days);
+    }
+    
+    public static PeriodicalSchedule New(DateOnly startingDateUtc, Period period, IDateTimeProvider dateTimeProvider)
+    {
+        var currentDateUtc = dateTimeProvider.UtcNowDateOnly;
+
+        if (!StartsAtLeastTomorrow())
+            throw new ArgumentOutOfRangeException(nameof(startingDateUtc), "Starting date is too early");
+
+        return new PeriodicalSchedule(period, startingDateUtc, lastCheckedUtc: null);
+
+        bool StartsAtLeastTomorrow()
+        {
+            return currentDateUtc.AddDays(1) <= startingDateUtc;
+        }
+    }
+
+    public static PeriodicalSchedule Existing(
+        DateOnly startingDateUtc,
+        DateOnly? lastCheckedUtc,
+        Period period,
+        IDateTimeProvider dateTimeProvider)
+    {
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(startingDateUtc, lastCheckedUtc ?? startingDateUtc);
+        
+        if (lastCheckedUtc is not null)
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(lastCheckedUtc.Value, dateTimeProvider.UtcNowDateOnly);
+        
+        return new(period, startingDateUtc, lastCheckedUtc);
     }
 }
 
 public sealed record Period
 {
-    private Period(TimeSpan span)
+    private Period(int days)
     {
-        Span = span;
+        Days = days;
     }
 
-    public TimeSpan Span { get; init; }
+    public int Days { get; init; }
 
-    public static Period Create(TimeSpan span)
-    {
-        if (span <= TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(span), "Span must be positive");
+    public static Period CreateDaily() =>
+        new(1);
+    
+    public static Period CreateWeekly() =>
+        new(7);
+    
+    public static Period CreateMonthly() =>
+        new(30);
 
-        return new(span);
-    }
+    public static Period FromDays(int days) =>
+        days switch
+        {
+            1 => CreateDaily(),
+            7 => CreateWeekly(),
+            30 => CreateMonthly(),
+            _ => throw new ArgumentOutOfRangeException(nameof(days), days, "Unsupported amount of days")
+        };
 }
 
 public sealed record AccountEntry
@@ -141,7 +160,7 @@ public sealed record AccountEntry
 
     public static AccountEntry Create(Guid id, DateOnly dateUtc, Transaction transaction, Account account, IDateTimeProvider dateTimeProvider)
     {
-        var currentDateUtc = DateOnly.FromDateTime(dateTimeProvider.UtcNow);
+        var currentDateUtc = dateTimeProvider.UtcNowDateOnly;
         
         ArgumentOutOfRangeException.ThrowIfGreaterThan(dateUtc, currentDateUtc);
         

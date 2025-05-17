@@ -118,6 +118,10 @@ public sealed record PeriodicalSchedule
 
 public sealed record Period
 {
+    public const int Day = 1;
+    public const int Week = 7;
+    public const int Month = 30;
+
     private Period(int days)
     {
         Days = days;
@@ -126,20 +130,20 @@ public sealed record Period
     public int Days { get; init; }
 
     public static Period CreateDaily() =>
-        new(1);
+        new(Day);
     
     public static Period CreateWeekly() =>
-        new(7);
+        new(Week);
     
     public static Period CreateMonthly() =>
-        new(30);
+        new(Month);
 
     public static Period FromDays(int days) =>
         days switch
         {
-            1 => CreateDaily(),
-            7 => CreateWeekly(),
-            30 => CreateMonthly(),
+            Day => CreateDaily(),
+            Week => CreateWeekly(),
+            Month => CreateMonthly(),
             _ => throw new ArgumentOutOfRangeException(nameof(days), days, "Unsupported amount of days")
         };
 }

@@ -1,4 +1,4 @@
-using BabloBudget.Api.Repository;
+﻿using BabloBudget.Api.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -53,6 +53,8 @@ public static class PresentationExtensions
             .AddUserStore<UserStore<IdentityUser<Guid>, IdentityRole<Guid>, ApplicationDbContext, Guid>>()
             .AddRoleStore<RoleStore<IdentityRole<Guid>, ApplicationDbContext, Guid>>()
             .AddApiEndpoints();
+
+        services.AddTransient<IDateTimeProvider, DefaultDateTimeProvider>();
         
         return services;
     }

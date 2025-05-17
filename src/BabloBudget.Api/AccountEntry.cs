@@ -24,103 +24,12 @@ public sealed record Account
     public Money BasisSum { get; init; }
     
     public Guid UserId { get; init; }
-    
-    // Такто нафиг не надо тут держать ни Entries, ни Flows. Аккаунт - аггрегат, к остальному должен идти через репозитории по логике.
-    // List<AccountEntry> Entries
-    // ...
- 
 
     public static Account Create(
         Money basisSum,
         Guid userId)
     {
         return new(basisSum, userId);
-    }
-}
-
-public sealed record MoneyFlow
-{
-    private MoneyFlow(Guid id, Transaction transaction, Schedule schedule)
-    {
-        Id = id;
-        Transaction = transaction;
-        Schedule = schedule;
-    }
-
-    public Guid Id { get; init; }
-    public Transaction Transaction { get; init; }
-    
-    // Id скедуле или вообще у скедуле id флоу
-    public Schedule Schedule { get; init; }
-}
-
-public abstract record Schedule
-{
-    protected Schedule(Guid id, DateOnly startingDateUtc)
-    {
-        Id = id;
-        StartingDateUtc = startingDateUtc;
-    }
-
-    public Guid Id { get; init; }
-    public DateOnly StartingDateUtc { get; init; }
-    public DateOnly? LastCheckedUtc { get; init; }
-    
-    public abstract bool IsOnTime(IDateTimeProvider dateTimeProvider);
-    
-    public Schedule MarkChecked(IDateTimeProvider dateTimeProvider) =>
-        this with
-        {
-            LastCheckedUtc = DateOnly.FromDateTime(dateTimeProvider.UtcNow)
-        };
-
-    public static Schedule CreatePeriodical(Guid id, DateOnly startingDateUtc, Period period, IDateTimeProvider dateTimeProvider)
-    {
-        var currentDateUtc = DateOnly.FromDateTime(dateTimeProvider.UtcNow);
-
-        if (currentDateUtc > startingDateUtc.AddDays(-1))
-            throw new ArgumentOutOfRangeException(nameof(startingDateUtc), "Starting date is too early");
-
-        return new PeriodicalSchedule(id, startingDateUtc, period);
-    }
-}
-
-internal sealed record PeriodicalSchedule : Schedule
-{
-    public Period Period { get; init; }
-    
-    internal PeriodicalSchedule(Guid id, DateOnly startingDateUtc, Period period)
-        : base(id, startingDateUtc)
-    {
-        Period = period;
-    }
-
-    public override bool IsOnTime(IDateTimeProvider dateTimeProvider)
-    {
-        var currentDateUtc = DateOnly.FromDateTime(dateTimeProvider.UtcNow);
-
-        return
-            currentDateUtc.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
-            - (LastCheckedUtc ?? StartingDateUtc).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
-            >= Period.Span;
-    }
-}
-
-public sealed record Period
-{
-    private Period(TimeSpan span)
-    {
-        Span = span;
-    }
-
-    public TimeSpan Span { get; init; }
-
-    public static Period Create(TimeSpan span)
-    {
-        if (span <= TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(span), "Span must be positive");
-
-        return new(span);
     }
 }
 
@@ -141,7 +50,7 @@ public sealed record AccountEntry
 
     public static AccountEntry Create(Guid id, DateOnly dateUtc, Transaction transaction, Account account, IDateTimeProvider dateTimeProvider)
     {
-        var currentDateUtc = DateOnly.FromDateTime(dateTimeProvider.UtcNow);
+        var currentDateUtc = dateTimeProvider.UtcNowDateOnly;
         
         ArgumentOutOfRangeException.ThrowIfGreaterThan(dateUtc, currentDateUtc);
         

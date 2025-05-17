@@ -35,21 +35,22 @@ public sealed record Account
 
 public sealed record MoneyFlow
 {
-    private MoneyFlow(Guid id, Transaction transaction, PeriodicalSchedule schedule)
+    private MoneyFlow(Guid id, Transaction transaction, PeriodicalSchedule schedule, Guid accountId)
     {
         Id = id;
         Transaction = transaction;
         Schedule = schedule;
+        AccountId = accountId;
     }
 
     public Guid Id { get; init; }
+    public Guid AccountId { get; init; }
+
     public Transaction Transaction { get; init; }
     public PeriodicalSchedule Schedule { get; init; }
 
-    public static MoneyFlow Create(Guid id, Transaction transaction, PeriodicalSchedule schedule)
-    {
-        return new(id, transaction, schedule);
-    }
+    public static MoneyFlow Create(Guid id, Account account, Transaction transaction, PeriodicalSchedule schedule) =>
+        new(id, transaction, schedule, account.UserId);
 }
 
 public sealed record PeriodicalSchedule

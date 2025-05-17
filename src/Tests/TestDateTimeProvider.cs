@@ -16,4 +16,7 @@ internal sealed class TestDateTimeProvider : IDateTimeProvider
     
     internal static IDateTimeProvider Create(DateTime dateTimeToProvide) =>
         new TestDateTimeProvider(() => dateTimeToProvide);
+    
+    internal static IDateTimeProvider Create(DateOnly dateToProvide) =>
+        Create(new DateTime(dateToProvide, TimeOnly.MinValue));
 }

@@ -83,6 +83,22 @@ public class PeriodicalScheduleTests
         result.ShouldBe(expectedSchedule);
     }
 
+    [TestMethod]
+    [DynamicData(nameof(IsOnTimeTestCases), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(IsOnTimeTestDisplayName))]
+    public void IsOnTime_ShouldReturnExpectedResult(IsOnTimeTestCase testCase)
+    {
+        // Arrange
+        var (schedule, currentDateUtc, expectedIsOnTime, _) = testCase;
+        
+        var dateTimeProvider = TestDateTimeProvider.Create(currentDateUtc);
+
+        // Act
+        var result = schedule.IsOnTime(dateTimeProvider);
+
+        // Assert
+        result.ShouldBe(expectedIsOnTime);
+    }
+
     public static IEnumerable<object[]> NewValidDatesCases()
     {
         var currentDateUtc = DateOnly.FromDateTime(new DateTime(2025, 5, 30, 0, 0, 0, DateTimeKind.Utc));
@@ -237,6 +253,51 @@ public class PeriodicalScheduleTests
 
         #endregion
     }
+
+    public static IEnumerable<object[]> IsOnTimeTestCases()
+    {
+        var currentDateUtc = DateOnly.FromDateTime(
+            new DateTime(year: 2025, month: 5, day: 30, hour: 0, minute: 0, second: 0, kind: DateTimeKind.Utc));
+        var currentDateTimeProvider = TestDateTimeProvider.Create(currentDateUtc);
+        
+        var startingDateUtc = currentDateUtc.AddDays(1);
+
+        var newSchedule = PeriodicalSchedule.New(
+            startingDateUtc: startingDateUtc,
+            period: Period.CreateDaily(),
+            dateTimeProvider: currentDateTimeProvider);
+
+        yield return new IsOnTimeTestCase(
+            Schedule: newSchedule,
+            CurrentDateUtc: currentDateUtc,
+            IsOnTime: false,
+            DisplayName: "Never checked, time has not come yet");
+        
+        
+        yield return new IsOnTimeTestCase(
+            Schedule: newSchedule,
+            CurrentDateUtc: startingDateUtc,
+            IsOnTime: true,
+            DisplayName: "Never checked, time has come");
+
+        var existingSchedule = PeriodicalSchedule.Existing(
+            startingDateUtc,
+            startingDateUtc.AddDays(1),
+            Period.CreateDaily(),
+            TestDateTimeProvider.Create(startingDateUtc.AddDays(1)));
+        
+        yield return new IsOnTimeTestCase(
+            Schedule: existingSchedule,
+            CurrentDateUtc: existingSchedule.LastCheckedUtc!.Value,
+            IsOnTime: false,
+            DisplayName: "Checked today, time has not come yet");
+        
+        yield return new IsOnTimeTestCase(
+            Schedule: existingSchedule,
+            CurrentDateUtc: existingSchedule.LastCheckedUtc!.Value.AddDays(1),
+            IsOnTime: true,
+            DisplayName: "Checked yesterday, time has come");
+    }
     
     public static string GetNewTestDisplayName(MethodInfo methodInfo, object[] values) =>
         $"{methodInfo.Name} ({((NewScheduleTestCase)values[0]).DisplayName})";
@@ -246,6 +307,9 @@ public class PeriodicalScheduleTests
     
     public static string TryMarkCheckedTestDisplayName(MethodInfo methodInfo, object[] values) =>
         $"{methodInfo.Name} ({((TryMarkCheckedTestCase)values[0]).DisplayName})";
+    
+    public static string IsOnTimeTestDisplayName(MethodInfo methodInfo, object[] values) =>
+        $"{methodInfo.Name} ({((IsOnTimeTestCase)values[0]).DisplayName})";
 }
 
 public sealed record NewScheduleTestCase(
@@ -276,5 +340,15 @@ public sealed record TryMarkCheckedTestCase(
     string DisplayName)
 {
     public static implicit operator object[](TryMarkCheckedTestCase testCase) =>
+        [testCase];
+}
+
+public sealed record IsOnTimeTestCase(
+    PeriodicalSchedule Schedule,
+    DateOnly CurrentDateUtc,
+    bool IsOnTime,
+    string DisplayName)
+{
+    public static implicit operator object[](IsOnTimeTestCase testCase) =>
         [testCase];
 }

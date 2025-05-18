@@ -52,11 +52,13 @@ public sealed record PeriodicalSchedule
             LastCheckedUtc = currentDateUtc
         };
     }
-        
 
     public bool IsOnTime(IDateTimeProvider dateTimeProvider)
     {
         var currentDateUtc = dateTimeProvider.UtcNowDateOnly;
+
+        if (currentDateUtc == StartingDateUtc)
+            return true;
 
         return
             currentDateUtc.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)

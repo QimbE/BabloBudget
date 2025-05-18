@@ -68,6 +68,21 @@ public class PeriodicalScheduleTests
         action.ShouldThrow<ArgumentOutOfRangeException>();
     }
 
+    [TestMethod]
+    [DynamicData(nameof(TryMarkCheckedTestCases), DynamicDataSourceType.Method, DynamicDataDisplayName = nameof(TryMarkCheckedTestDisplayName))]
+    public void TryMarkChecked_ShouldReturnExpectedResult(TryMarkCheckedTestCase testCase)
+    {
+        // Arrange
+        var (sourceSchedule, currentDateUtc, expectedSchedule, _) = testCase;
+        var dateTimeProvider = TestDateTimeProvider.Create(currentDateUtc);
+        
+        // Act
+        var result = sourceSchedule.TryMarkChecked(dateTimeProvider);
+        
+        // Assert
+        result.ShouldBe(expectedSchedule);
+    }
+
     public static IEnumerable<object[]> NewValidDatesCases()
     {
         var currentDateUtc = DateOnly.FromDateTime(new DateTime(2025, 5, 30, 0, 0, 0, DateTimeKind.Utc));
@@ -149,11 +164,88 @@ public class PeriodicalScheduleTests
             DisplayName: "Starting today, checked tomorrow");
     }
     
+    public static IEnumerable<object[]> TryMarkCheckedTestCases()
+    {
+        #region SourceSchedule
+        var currentDateUtc = DateOnly.FromDateTime(
+            new DateTime(2025, 5, 30, 0, 0, 0, DateTimeKind.Utc));
+        var startingDateUtc = currentDateUtc.AddDays(1);
+
+        var sourceSchedule = PeriodicalSchedule.New(
+            startingDateUtc,
+            Period.CreateDaily(),
+            TestDateTimeProvider.Create(currentDateUtc));
+        #endregion
+
+        #region Checked on the starting day
+        var checkedTime = startingDateUtc;
+
+        var expectedSchedule1 = PeriodicalSchedule.Existing(
+            startingDateUtc,
+            checkedTime,
+            Period.CreateDaily(),
+            TestDateTimeProvider.Create(checkedTime));
+        
+        yield return new TryMarkCheckedTestCase(
+            sourceSchedule,
+            checkedTime,
+            expectedSchedule1,
+            "Checked on the starting day");
+        #endregion
+
+        #region Checked on the next day
+        var checkedTime2 = startingDateUtc.AddDays(1);
+        var expectedSchedule2 = PeriodicalSchedule.Existing(
+            startingDateUtc,
+            checkedTime2,
+            Period.CreateDaily(),
+            TestDateTimeProvider.Create(checkedTime2));
+        
+        yield return new TryMarkCheckedTestCase(
+            sourceSchedule,
+            checkedTime2,
+            expectedSchedule2,
+            "Checked on the next day");
+
+        #endregion
+
+        #region Checked before start
+
+        var checkedTime3 = startingDateUtc.AddDays(-1);
+        yield return new TryMarkCheckedTestCase(
+            sourceSchedule,
+            checkedTime3,
+            null,
+            "Checked before start");
+
+        #endregion
+
+        #region Already checked before
+        var sourceSchedule2 = PeriodicalSchedule.Existing(
+            startingDateUtc,
+            startingDateUtc.AddDays(2),
+            Period.CreateDaily(),
+            TestDateTimeProvider.Create(startingDateUtc.AddDays(2)));
+        
+        var checkedTime4 = startingDateUtc.AddDays(1);
+        
+        yield return new TryMarkCheckedTestCase(
+            sourceSchedule2,
+            checkedTime4,
+            null,
+            "Already checked before");
+
+        #endregion
+    }
+    
     public static string GetNewTestDisplayName(MethodInfo methodInfo, object[] values) =>
         $"{methodInfo.Name} ({((NewScheduleTestCase)values[0]).DisplayName})";
     
     public static string GetExistingTestDisplayName(MethodInfo methodInfo, object[] values) =>
         $"{methodInfo.Name} ({((ExistingScheduleTestCase)values[0]).DisplayName})";
+    
+    public static string TryMarkCheckedTestDisplayName(MethodInfo methodInfo, object[] values) =>
+        $"{methodInfo.Name} ({((TryMarkCheckedTestCase)values[0]).DisplayName})";
 }
 
 public sealed record NewScheduleTestCase(
@@ -174,5 +266,15 @@ public sealed record ExistingScheduleTestCase(
     string DisplayName)
 {
     public static implicit operator object[](ExistingScheduleTestCase testCase) =>
+        [testCase];
+}
+
+public sealed record TryMarkCheckedTestCase(
+    PeriodicalSchedule SourceSchedule,
+    DateOnly CurrentDateUtc,
+    PeriodicalSchedule? ExpectedSchedule,
+    string DisplayName)
+{
+    public static implicit operator object[](TryMarkCheckedTestCase testCase) =>
         [testCase];
 }

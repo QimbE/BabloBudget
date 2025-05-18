@@ -36,12 +36,23 @@ public sealed record PeriodicalSchedule
         LastCheckedUtc = lastCheckedUtc;
         StartingDateUtc = startingDateUtc;
     }
-    
-    public PeriodicalSchedule MarkChecked(IDateTimeProvider dateTimeProvider) =>
-        this with
+
+    public PeriodicalSchedule? TryMarkChecked(IDateTimeProvider dateTimeProvider)
+    {
+        var currentDateUtc = dateTimeProvider.UtcNowDateOnly;
+        
+        if(StartingDateUtc > currentDateUtc)
+            return null;
+        
+        if(LastCheckedUtc > currentDateUtc)
+            return null;
+        
+        return this with
         {
-            LastCheckedUtc = dateTimeProvider.UtcNowDateOnly
+            LastCheckedUtc = currentDateUtc
         };
+    }
+        
 
     public bool IsOnTime(IDateTimeProvider dateTimeProvider)
     {

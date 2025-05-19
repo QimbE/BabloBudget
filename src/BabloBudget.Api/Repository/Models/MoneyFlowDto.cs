@@ -40,14 +40,15 @@ public sealed class MoneyFlowDto
         return MoneyFlow.Create(Id, account, transaction, schedule);
     }
 
-    public MoneyFlowDto FromDomainModel(MoneyFlow domainModel) => new()
-    {
-        Id = domainModel.Id,
-        AccountId = domainModel.AccountId,
-        CategoryId = domainModel.Transaction.CategoryId,
-        Sum = domainModel.Transaction.Sum.Amount,
-        StartingDateUtc = domainModel.Schedule.StartingDateUtc,
-        LastCheckedUtc = domainModel.Schedule.LastCheckedUtc,
-        PeriodDays = domainModel.Schedule.Period.Days
-    };
+    public MoneyFlowDto FromDomainModel(MoneyFlow domainModel) =>
+        new()
+        {
+            Id = domainModel.Id,
+            AccountId = domainModel.AccountId,
+            CategoryId = domainModel.Transaction.CategoryId,
+            Sum = domainModel.Transaction.Sum.Amount,
+            StartingDateUtc = domainModel.Schedule.StartingDateUtc,
+            LastCheckedUtc = domainModel.Schedule.LastCheckedUtc,
+            PeriodDays = domainModel.Schedule.Period.Days
+        };
 }

@@ -18,6 +18,32 @@ public sealed record MoneyFlow
 
     public static MoneyFlow Create(Guid id, Account account, Transaction transaction, PeriodicalSchedule schedule) =>
         new(id, transaction, schedule, account.UserId);
+
+    public AccountEntry GetNextEntry(Guid idForEntry, Account account, IDateTimeProvider dateTimeProvider)
+    {
+        if (account.UserId != AccountId)
+            throw new ArgumentException("Can not get entry for unknown account");
+
+        return AccountEntry.Create(
+            idForEntry,
+            Schedule.NextCheckDateUtc,
+            Transaction,
+            account,
+            dateTimeProvider);
+    }
+
+    public MoneyFlow? TryMarkProcessed(IDateTimeProvider dateTimeProvider)
+    {
+        var checkedSchedule = Schedule.TryMarkChecked(dateTimeProvider);
+        
+        if (checkedSchedule is null)
+            return null;
+
+        return this with
+        {
+            Schedule = checkedSchedule
+        };
+    }
 }
 
 public sealed record PeriodicalSchedule

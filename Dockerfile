@@ -25,4 +25,4 @@ EXPOSE 8018
 ENV ASPNETCORE_URLS=http://+:8018
 WORKDIR /app
 COPY --from=publish /dist/services .
-ENTRYPOINT ["dotnet", "BabloBudget.dll"]
+ENTRYPOINT ["dotnet", "BabloBudget.Api.dll"]

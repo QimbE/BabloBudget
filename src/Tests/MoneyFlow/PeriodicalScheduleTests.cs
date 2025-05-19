@@ -178,6 +178,13 @@ public class PeriodicalScheduleTests
             CurrentDateUtc: currentDateUtc,
             Period: Period.CreateDaily(),
             DisplayName: "Starting today, checked tomorrow");
+        
+        yield return new ExistingScheduleTestCase(
+            StartingDateUtc: currentDateUtc,
+            LastCheckedUtc: currentDateUtc.AddDays(1),
+            CurrentDateUtc: currentDateUtc.AddDays(1),
+            Period: Period.CreateMonthly(),
+            DisplayName: "Last time checked out of schedule");
     }
     
     public static IEnumerable<object[]> TryMarkCheckedTestCases()
@@ -193,12 +200,12 @@ public class PeriodicalScheduleTests
             TestDateTimeProvider.Create(currentDateUtc));
         #endregion
 
-        #region Checked 2 days after scheduled, check on schedule expected
+        #region Checked 2 periods after start, check on schedule expected
         var checkedTime = startingDateUtc.AddDays(2);
 
         var expectedSchedule1 = PeriodicalSchedule.Existing(
             startingDateUtc,
-            startingDateUtc.AddDays(1), // expecting next date on schedule
+            startingDateUtc, // expecting next date on schedule
             Period.CreateDaily(),
             TestDateTimeProvider.Create(checkedTime));
         
@@ -206,23 +213,7 @@ public class PeriodicalScheduleTests
             sourceSchedule,
             checkedTime,
             expectedSchedule1,
-            "Checked on the starting day");
-        #endregion
-
-        #region Checked on the next day
-        var checkedTime2 = startingDateUtc.AddDays(1);
-        var expectedSchedule2 = PeriodicalSchedule.Existing(
-            startingDateUtc,
-            checkedTime2,
-            Period.CreateDaily(),
-            TestDateTimeProvider.Create(checkedTime2));
-        
-        yield return new TryMarkCheckedTestCase(
-            sourceSchedule,
-            checkedTime2,
-            expectedSchedule2,
-            "Checked on the next day");
-
+            "Checked 2 periods after start, check on schedule expected");
         #endregion
 
         #region Checked before start
@@ -236,13 +227,15 @@ public class PeriodicalScheduleTests
 
         #endregion
 
-        #region Already checked before
+        #region SourceSchedule2
         var sourceSchedule2 = PeriodicalSchedule.Existing(
             startingDateUtc,
             startingDateUtc.AddDays(2),
             Period.CreateDaily(),
             TestDateTimeProvider.Create(startingDateUtc.AddDays(2)));
-        
+        #endregion
+
+        #region Already checked before
         var checkedTime4 = startingDateUtc.AddDays(1);
         
         yield return new TryMarkCheckedTestCase(
@@ -250,6 +243,22 @@ public class PeriodicalScheduleTests
             checkedTime4,
             null,
             "Already checked before");
+
+        #endregion
+        
+        #region Checked 2 periods after last check, check on schedule expected
+        var checkedTime2 = sourceSchedule2.LastCheckedUtc!.Value.AddDays(2);
+        var expectedSchedule2 = PeriodicalSchedule.Existing(
+            startingDateUtc,
+            sourceSchedule2.LastCheckedUtc!.Value.AddDays(1),
+            Period.CreateDaily(),
+            TestDateTimeProvider.Create(checkedTime2));
+        
+        yield return new TryMarkCheckedTestCase(
+            sourceSchedule2,
+            checkedTime2,
+            expectedSchedule2,
+            "Checked 2 periods after last check, check on schedule expected");
 
         #endregion
     }

@@ -26,9 +26,12 @@ public sealed record PeriodicalSchedule
     public DateOnly? LastCheckedUtc { get; init; }
 
     public Period Period { get; init; }
-    
+
     public DateOnly NextCheckDateUtc =>
-        (LastCheckedUtc ?? StartingDateUtc).AddDays(Period.Days);
+        LastCheckedUtc is null
+            ? StartingDateUtc
+            : LastCheckedUtc!.Value.AddDays(Period.Days);
+
 
     private PeriodicalSchedule(
         Period period,
@@ -79,13 +82,24 @@ public sealed record PeriodicalSchedule
         Period period,
         IDateTimeProvider dateTimeProvider)
     {
-        if (lastCheckedUtc is not null)
-        {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(startingDateUtc, lastCheckedUtc.Value);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(lastCheckedUtc.Value, dateTimeProvider.UtcNowDateOnly);
-        }
-        
+        if (lastCheckedUtc is null)
+            return new(period, startingDateUtc, lastCheckedUtc);
+
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(startingDateUtc, lastCheckedUtc.Value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(lastCheckedUtc.Value, dateTimeProvider.UtcNowDateOnly);
+
+        if (!IsOnSchedule(startingDateUtc, lastCheckedUtc.Value, period))
+            throw new ArgumentOutOfRangeException(nameof(lastCheckedUtc), "Impossible last checked date");
+
         return new(period, startingDateUtc, lastCheckedUtc);
+    }
+
+    private static bool IsOnSchedule(DateOnly startingDateUtc, DateOnly lastCheckedUtc, Period period)
+    {
+        if (lastCheckedUtc < startingDateUtc)
+            return false;
+
+        return (lastCheckedUtc.DayNumber - startingDateUtc.DayNumber) % period.Days == 0;
     }
 }
 

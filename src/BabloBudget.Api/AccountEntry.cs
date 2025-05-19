@@ -60,7 +60,7 @@ public sealed record AccountEntry
 
 public sealed record Transaction
 {
-    private Transaction(Money sum, Guid categoryId)
+    private Transaction(Money sum, Guid? categoryId)
     {
         Sum = sum;
         CategoryId = categoryId;
@@ -68,11 +68,14 @@ public sealed record Transaction
 
     public Money Sum { get; init; }
 
-    public Guid CategoryId { get; init; }
+    public Guid? CategoryId { get; init; }
 
-    public static Transaction Create(Money sum, Category category)
+    public static Transaction Create(Money sum, Category? category)
     {
         ArgumentOutOfRangeException.ThrowIfZero(sum.Amount);
+
+        if (category is null)
+            return new(sum, null);
         
         if (sum.IsNegative && category.Type is not CategoryType.Expense)
             throw new ArgumentException("Can not use non-expense category for expense transaction");

@@ -44,5 +44,8 @@ public class MoneyFlowConfiguration : IEntityTypeConfiguration<MoneyFlowDto>
             .Property(mf => mf.PeriodDays)
             .IsRequired()
             .HasConversion<int>();
+
+        builder
+            .HasIndex(mf => new { mf.LastCheckedUtc, mf.StartingDateUtc });
     }
 }

@@ -26,6 +26,9 @@ public sealed record PeriodicalSchedule
     public DateOnly? LastCheckedUtc { get; init; }
 
     public Period Period { get; init; }
+    
+    public DateOnly NextCheckDateUtc =>
+        (LastCheckedUtc ?? StartingDateUtc).AddDays(Period.Days);
 
     private PeriodicalSchedule(
         Period period,
@@ -39,17 +42,12 @@ public sealed record PeriodicalSchedule
 
     public PeriodicalSchedule? TryMarkChecked(IDateTimeProvider dateTimeProvider)
     {
-        var currentDateUtc = dateTimeProvider.UtcNowDateOnly;
-        
-        if(StartingDateUtc > currentDateUtc)
-            return null;
-        
-        if(LastCheckedUtc > currentDateUtc)
+        if (!IsOnTime(dateTimeProvider))
             return null;
         
         return this with
         {
-            LastCheckedUtc = currentDateUtc
+            LastCheckedUtc = NextCheckDateUtc
         };
     }
 
@@ -57,13 +55,7 @@ public sealed record PeriodicalSchedule
     {
         var currentDateUtc = dateTimeProvider.UtcNowDateOnly;
 
-        if (currentDateUtc == StartingDateUtc)
-            return true;
-
-        return
-            currentDateUtc.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
-            - (LastCheckedUtc ?? StartingDateUtc).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)
-            >= TimeSpan.FromDays(Period.Days);
+        return currentDateUtc >= NextCheckDateUtc;
     }
     
     public static PeriodicalSchedule New(DateOnly startingDateUtc, Period period, IDateTimeProvider dateTimeProvider)

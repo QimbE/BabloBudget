@@ -193,12 +193,12 @@ public class PeriodicalScheduleTests
             TestDateTimeProvider.Create(currentDateUtc));
         #endregion
 
-        #region Checked on the starting day
-        var checkedTime = startingDateUtc;
+        #region Checked 2 days after scheduled, check on schedule expected
+        var checkedTime = startingDateUtc.AddDays(2);
 
         var expectedSchedule1 = PeriodicalSchedule.Existing(
             startingDateUtc,
-            checkedTime,
+            startingDateUtc.AddDays(1), // expecting next date on schedule
             Period.CreateDaily(),
             TestDateTimeProvider.Create(checkedTime));
         
@@ -276,7 +276,7 @@ public class PeriodicalScheduleTests
         
         yield return new IsOnTimeTestCase(
             Schedule: newSchedule,
-            CurrentDateUtc: startingDateUtc,
+            CurrentDateUtc: startingDateUtc.AddDays(1),
             IsOnTime: true,
             DisplayName: "Never checked, time has come");
 

@@ -40,7 +40,7 @@ public sealed class MoneyFlowDto
         return MoneyFlow.Create(Id, account, transaction, schedule);
     }
 
-    public MoneyFlowDto FromDomainModel(MoneyFlow domainModel) =>
+    public static MoneyFlowDto FromDomainModel(MoneyFlow domainModel) =>
         new()
         {
             Id = domainModel.Id,

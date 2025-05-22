@@ -2,9 +2,7 @@ using BabloBudget.Api;
 using BabloBudget.Api.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
 var builder = WebApplication.CreateBuilder(args);
-
 var configuration = builder.Configuration;
 builder.Services.AddLayers(configuration);
 
@@ -19,7 +17,6 @@ app.UseCors(x => x
 app.ApplyMigrations();
 
 // Configure the HTTP request pipeline.
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -32,8 +29,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapIdentityApi<IdentityUser>();
-
 app.Run();
 
 
@@ -42,10 +37,9 @@ public static class MigrationExtensions
     public static void ApplyMigrations(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
-
         using var dbContext = scope.ServiceProvider
             .GetRequiredService<ApplicationDbContext>();
-        
+
         dbContext.Database.Migrate();
         scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>().LogInformation("Applied migrations");
     }

@@ -1,3 +1,5 @@
+using BabloBudget.Api.Domain;
+
 namespace BabloBudget.Api.Repository.Models;
 
 public sealed class AccountDto

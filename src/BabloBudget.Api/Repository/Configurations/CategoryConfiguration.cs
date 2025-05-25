@@ -1,4 +1,5 @@
-﻿using BabloBudget.Api.Repository.Models;
+﻿using BabloBudget.Api.Domain;
+using BabloBudget.Api.Repository.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

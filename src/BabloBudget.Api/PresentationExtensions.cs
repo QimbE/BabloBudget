@@ -1,4 +1,5 @@
-using BabloBudget.Api.Repository;
+﻿using BabloBudget.Api.Repository;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +35,7 @@ public static class PresentationExtensions
 
         services.AddAuthorization();
 
-        services.AddAuthentication()
+        services.AddAuthentication(c => c.DefaultAuthenticateScheme = IdentityConstants.BearerScheme)
             .AddBearerToken(IdentityConstants.BearerScheme);
         
         return services;
@@ -53,6 +54,8 @@ public static class PresentationExtensions
             .AddUserStore<UserStore<IdentityUser<Guid>, IdentityRole<Guid>, ApplicationDbContext, Guid>>()
             .AddRoleStore<RoleStore<IdentityRole<Guid>, ApplicationDbContext, Guid>>()
             .AddApiEndpoints();
+
+        services.AddTransient<IDateTimeProvider, DefaultDateTimeProvider>();
         
         return services;
     }

@@ -14,11 +14,17 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
     }
     
     public DbSet<AccountDto> Accounts { get; private set; }
+    
+    public DbSet<MoneyFlowDto> MoneyFlows { get; private set; }
+    
+    public DbSet<CategoryDto> Categories { get; private set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
         builder.ApplyConfiguration(new AccountConfiguration());
+        builder.ApplyConfiguration(new MoneyFlowConfiguration());
+        builder.ApplyConfiguration(new CategoryConfiguration());
     }
 }

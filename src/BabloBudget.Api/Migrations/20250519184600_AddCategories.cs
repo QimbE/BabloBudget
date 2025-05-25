@@ -6,21 +6,22 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BabloBudget.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class addAccounts : Migration
+    public partial class AddCategories : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Accounts",
+                name: "Categories",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    BasisSum = table.Column<decimal>(type: "numeric", nullable: false)
+                    Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Accounts", x => x.Id);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
         }
 
@@ -28,7 +29,7 @@ namespace BabloBudget.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Accounts");
+                name: "Categories");
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace BabloBudget.Api.Repository.Models;
+﻿using BabloBudget.Api.Domain;
+
+namespace BabloBudget.Api.Repository.Models;
 
 public sealed class CategoryDto
 {

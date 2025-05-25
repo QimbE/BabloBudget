@@ -10,12 +10,7 @@ builder.Services.AddLayers(configuration);
 
 var app = builder.Build();
 
-app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-            );
-
+app.UseCors("AllowAll");
 app.ApplyMigrations();
 
 // Configure the HTTP request pipeline.

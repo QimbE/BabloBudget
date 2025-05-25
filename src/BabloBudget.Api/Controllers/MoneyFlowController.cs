@@ -49,17 +49,13 @@ public class MoneyFlowController(
             var account = accountDto.ToDomainModel();
             var category = categoryDto?.ToDomainModel();
 
-            var moneyFlowDto = new MoneyFlowDto()
-            {
-                Id = Guid.NewGuid(),
-                AccountId = userId.Value,
-                CategoryId = categoryId,
-                StartingDateUtc = startingDate,
-                LastCheckedUtc = null,
-                PeriodDays = period.ToDays(),
-                Sum = sum,
-            };
-            var moneyFlow = moneyFlowDto.ToDomainModel(account, category, dateTimeProvider);
+            var transaction = Transaction.Create(Money.Create(sum), category);
+            var schedule = PeriodicalSchedule.New(
+                startingDate,
+                Period.FromDays(period.ToDays()),
+                dateTimeProvider);
+            
+            var moneyFlow = MoneyFlow.Create(Guid.NewGuid(), account, transaction, schedule);
             
             var moneyFlowResponseDto = MoneyFlowDto.FromDomainModel(moneyFlow);
 

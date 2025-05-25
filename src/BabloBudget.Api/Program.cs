@@ -25,12 +25,11 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
-app.MapIdentityApi<IdentityUser<Guid>>();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapIdentityApi<IdentityUser<Guid>>();
 
 app.Run();
 

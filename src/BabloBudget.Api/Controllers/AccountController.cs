@@ -103,7 +103,7 @@ public class AccountController(IDbContextFactory<ApplicationDbContext> dbContext
             var newAccountDto = AccountDto.FromDomainModel(newAccount);
             dbContext.Accounts.Update(newAccountDto);
             await dbContext.SaveChangesAsync(token);
-            return Ok("Account updated successfully");
+            return Ok(newAccountDto);
         },
         cancellationToken: token);
 

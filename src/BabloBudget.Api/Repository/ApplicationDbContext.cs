@@ -1,4 +1,5 @@
-﻿using BabloBudget.Api.Repository.Configurations;
+﻿using BabloBudget.Api.Domain;
+using BabloBudget.Api.Repository.Configurations;
 using BabloBudget.Api.Repository.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -19,6 +20,8 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
     
     public DbSet<CategoryDto> Categories { get; private set; }
 
+    public DbSet<AccountEntryDto> AccountEntries { get; private set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -26,5 +29,6 @@ public sealed class ApplicationDbContext : IdentityDbContext<IdentityUser<Guid>,
         builder.ApplyConfiguration(new AccountConfiguration());
         builder.ApplyConfiguration(new MoneyFlowConfiguration());
         builder.ApplyConfiguration(new CategoryConfiguration());
+        builder.ApplyConfiguration(new AccountEntryConfiguration());
     }
 }

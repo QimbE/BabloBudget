@@ -14,7 +14,7 @@ public class AccountEntryDto
 
     public Guid AccountId { get; init; }
 
-    public AccountEntry ToDomainModel(Category category, Account account, IDateTimeProvider dateTimeProvider)
+    public AccountEntry ToDomainModel(Category? category, Account account, IDateTimeProvider dateTimeProvider)
     {
         if (category?.Id != CategoryId)
             throw new ArgumentException("Category id must match given category", nameof(category));

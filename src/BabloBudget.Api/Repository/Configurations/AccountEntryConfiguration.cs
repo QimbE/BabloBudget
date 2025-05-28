@@ -33,8 +33,5 @@ public class AccountEntryConfiguration : IEntityTypeConfiguration<AccountEntryDt
             .WithMany()
             .HasForeignKey(ae => ae.AccountId)
             .IsRequired();
-
-        builder
-            .HasIndex(ae => new { ae.AccountId, ae.DateUtc, ae.Sum });
     }
 }

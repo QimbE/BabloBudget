@@ -245,6 +245,66 @@ public class AccountEntryController(
 
         return result;
     }
+
+    [HttpPut("Update")]
+    public async Task<IActionResult> UpdateAccountEntryAsync(
+        [FromBody] CreateAccountEntryRequest createAccountEntryRequest,
+        [FromQuery] Guid accountEntryId,
+        CancellationToken token)
+    {
+        var userId = HttpContext.User.TryParseUserId();
+
+        if (userId is null)
+            return BadRequest("Unable to identify user");
+
+        var result = await dbContextFactory.ExecuteAndCommitAsync<IActionResult>(async dbContext =>
+        {
+            var accountEntryDto = await dbContext.AccountEntries
+                .SingleOrDefaultAsync(a => a.Id == accountEntryId, token);
+
+            if (accountEntryDto is null)
+                return NotFound("Account entry does not exist");
+
+            if (accountEntryDto.AccountId != userId)
+                return Forbid();
+
+            var accountDto = await dbContext.Accounts
+                .SingleOrDefaultAsync(a => a.Id == userId, token);
+
+            if (accountDto is null)
+                return BadRequest("Account does not exist");
+
+            var (sum, date, categoryId) = createAccountEntryRequest;
+            var categoryDto = categoryId is null
+                ? null
+                : await dbContext.Categories.SingleOrDefaultAsync(c => c.Id == categoryId, token);
+
+            if (categoryDto is null != categoryId is null)
+                return BadRequest($"Category with id {categoryId} does not exist");
+
+            var account = accountDto.ToDomainModel();
+            var category = categoryDto?.ToDomainModel();
+
+            var newAccountEntryDto = new AccountEntryDto()
+            {
+                Id = accountEntryId,
+                DateUtc = date,
+                Sum = sum,
+                CategoryId = categoryId,
+                AccountId = userId.Value,
+            };
+            var accountEntry = newAccountEntryDto.ToDomainModel(category, account, dateTimeProvider);
+
+            var accountEntryResponseDto = AccountEntryDto.FromDomainModel(accountEntry);
+
+            dbContext.AccountEntries.Update(accountEntryResponseDto);
+            await dbContext.SaveChangesAsync(token);
+            return Ok(accountEntryResponseDto);
+        },
+            cancellationToken: token);
+
+        return result;
+    }
 }
 
 public sealed record CreateAccountEntryRequest(

@@ -60,6 +60,38 @@ public class AccountEntryController(
 
         return result;
     }
+
+    [HttpDelete("Delete")]
+    public async Task<IActionResult> DeleteAccountEntryAsync(
+        [FromQuery] Guid accountEntryId,
+        CancellationToken token)
+    {
+        var userId = HttpContext.User.TryParseUserId();
+
+        if (userId is null)
+            return BadRequest("Unable to identify user");
+
+        var result = await dbContextFactory.ExecuteAndCommitAsync<IActionResult>(async dbContext =>
+        {
+            var accountEntryDto = await dbContext.AccountEntries
+                .SingleOrDefaultAsync(a => a.Id == accountEntryId, token);
+
+            if (accountEntryDto is null)
+                return NotFound("Account entry does not exist");
+
+            if (accountEntryDto.AccountId != userId)
+                return Forbid();
+
+            dbContext.AccountEntries.Remove(accountEntryDto);
+
+            await dbContext.SaveChangesAsync(token);
+
+            return Ok();
+        },
+        cancellationToken: token);
+
+        return result;
+    }
 }
 
 public sealed record CreateAccountEntryRequest(

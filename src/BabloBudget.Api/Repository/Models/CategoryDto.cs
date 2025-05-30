@@ -5,6 +5,8 @@ namespace BabloBudget.Api.Repository.Models;
 public sealed class CategoryDto
 {
     public required Guid Id { get; init; }
+
+    public required Guid UserId { get; init; }
     
     public required string Name { get; init; }
     
@@ -14,10 +16,11 @@ public sealed class CategoryDto
         new()
         {
             Id = domainModel.Id,
+            UserId = domainModel.UserId,
             Name = domainModel.Name,
             Type = domainModel.Type
         };
 
     public Category ToDomainModel() =>
-        Category.Create(Id, Name, Type);
+        Category.Create(Id, UserId, Name, Type);
 }

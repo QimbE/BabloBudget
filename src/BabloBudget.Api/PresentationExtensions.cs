@@ -19,6 +19,16 @@ public static class PresentationExtensions
     {
         services.AddControllers();
 
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowAnyOrigin();
+            });
+        });
+
         services.AddSwaggerGen(options => {
             options.SwaggerDoc("v1", new() { Title="BabloBudget API", Version="v1" });
             options.AddSecurityDefinition("oauth2", new()

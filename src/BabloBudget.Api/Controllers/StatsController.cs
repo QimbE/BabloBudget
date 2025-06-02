@@ -18,8 +18,8 @@ public class StatsController(
     IDateTimeProvider dateTimeProvider)
     : ControllerBase
 {
-    [HttpPost("GetCurrentBallance")]
-    public async Task<IActionResult> GetCurrentBallanceAsync(
+    [HttpPost("GetCurrentBalance")]
+    public async Task<IActionResult> GetCurrentBalanceAsync(
         CancellationToken token)
     {
         var userId = HttpContext.User.TryParseUserId();
@@ -35,7 +35,7 @@ public class StatsController(
             if (accountDto is null)
                 return BadRequest("Account does not exist");
 
-            var ballance = accountDto.BasisSum;
+            var balance = accountDto.BasisSum;
 
             var accountEntries = (await dbContext.AccountEntries
                 .Where(ae => ae.AccountId == userId)
@@ -43,17 +43,17 @@ public class StatsController(
                 .ToImmutableList();
 
             foreach (var accountEntry in accountEntries)
-                ballance += accountEntry.Sum;
+                balance += accountEntry.Sum;
 
-            return Ok(ballance);
+            return Ok(balance);
         },
         cancellationToken: token);
 
         return result;
     }
 
-    [HttpPost("GetBallanceAtDate")]
-    public async Task<IActionResult> GetBallanceAtDateAsync(
+    [HttpPost("GetBalanceAtDate")]
+    public async Task<IActionResult> GetBalanceAtDateAsync(
         [FromQuery] DateOnly dateInclusive,
         CancellationToken token)
     {
@@ -70,7 +70,7 @@ public class StatsController(
             if (accountDto is null)
                 return BadRequest("Account does not exist");
 
-            var ballance = accountDto.BasisSum;
+            var balance = accountDto.BasisSum;
 
             var accountEntries = (await dbContext.AccountEntries
                 .Where(ae => 
@@ -80,9 +80,62 @@ public class StatsController(
                 .ToImmutableList();
 
             foreach (var accountEntry in accountEntries)
-                ballance += accountEntry.Sum;
+                balance += accountEntry.Sum;
 
-            return Ok(ballance);
+            return Ok(balance);
+        },
+        cancellationToken: token);
+
+        return result;
+    }
+
+    [HttpPost("GetBalanceChangeInPeriodBySteps")]
+    public async Task<IActionResult> GetBalanceChangeInPeriodByStepsAsync(
+        [FromQuery] DateOnly startDateInclusive,
+        [FromQuery] DateOnly endDateInclusive,
+        [FromQuery] int steps,
+        CancellationToken token)
+    {
+        var userId = HttpContext.User.TryParseUserId();
+
+        if (userId is null)
+            return BadRequest("Unable to identify user");
+
+        var result = await dbContextFactory.ExecuteAndCommitAsync<IActionResult>(async dbContext =>
+        {
+            if (steps < 4 || steps > 12)
+                return BadRequest("Invalid number of steps");
+
+            int dayDiff = endDateInclusive.DayNumber - startDateInclusive.DayNumber + 1;
+
+            if (startDateInclusive > dateTimeProvider.UtcNowDateOnly || 
+                endDateInclusive > dateTimeProvider.UtcNowDateOnly ||
+                dayDiff < steps)
+                return BadRequest("Invalid date period");
+
+            var accountDto = await dbContext.Accounts
+                .SingleOrDefaultAsync(a => a.Id == userId, token);
+
+            if (accountDto is null)
+                return BadRequest("Account does not exist");
+
+            List<decimal> sums = Enumerable.Repeat((decimal)0, steps).ToList();
+
+            var accountEntries = (await dbContext.AccountEntries
+                .Where(ae =>
+                    ae.AccountId == userId &&
+                    startDateInclusive <= ae.DateUtc && ae.DateUtc <= endDateInclusive)
+                .ToListAsync(token))
+                .ToImmutableList();
+
+            double stepLength = (double)dayDiff / steps;
+            foreach (var accountEntry in accountEntries)
+            {
+                int step = (int)Math.Floor((accountEntry.DateUtc.DayNumber - startDateInclusive.DayNumber) / stepLength);
+                sums[step] += accountEntry.Sum;
+            }   
+
+            return Ok(sums);
         },
         cancellationToken: token);
 

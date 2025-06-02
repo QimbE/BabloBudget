@@ -51,4 +51,41 @@ public class StatsController(
 
         return result;
     }
+
+    [HttpPost("GetBallanceAtDate")]
+    public async Task<IActionResult> GetBallanceAtDateAsync(
+        [FromQuery] DateOnly dateInclusive,
+        CancellationToken token)
+    {
+        var userId = HttpContext.User.TryParseUserId();
+
+        if (userId is null)
+            return BadRequest("Unable to identify user");
+
+        var result = await dbContextFactory.ExecuteAndCommitAsync<IActionResult>(async dbContext =>
+        {
+            var accountDto = await dbContext.Accounts
+                .SingleOrDefaultAsync(a => a.Id == userId, token);
+
+            if (accountDto is null)
+                return BadRequest("Account does not exist");
+
+            var ballance = accountDto.BasisSum;
+
+            var accountEntries = (await dbContext.AccountEntries
+                .Where(ae => 
+                    ae.AccountId == userId &&
+                    ae.DateUtc <= dateInclusive)
+                .ToListAsync(token))
+                .ToImmutableList();
+
+            foreach (var accountEntry in accountEntries)
+                ballance += accountEntry.Sum;
+
+            return Ok(ballance);
+        },
+        cancellationToken: token);
+
+        return result;
+    }
 }

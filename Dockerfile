@@ -9,7 +9,7 @@ RUN dotnet restore "BabloBudget.sln"
 COPY . .
 RUN dotnet build "BabloBudget.sln" -c Release --no-restore
 
-### tests
+## tests
 FROM mcr.microsoft.com/dotnet/sdk:9.0 as tests
 WORKDIR /tests
 COPY --from=build /sln/src/Tests .
@@ -23,11 +23,6 @@ RUN dotnet publish "./src/BabloBudget.Api/BabloBudget.Api.csproj" -c Release --o
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS services
 EXPOSE 8018
 ENV ASPNETCORE_URLS=http://+:8018
-
-### wait-for-it
-COPY wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
-
 WORKDIR /app
 COPY --from=publish /dist/services .
-ENTRYPOINT ["/wait-for-it.sh", "db:5432", "--", "dotnet", "BabloBudget.Api.dll"]
+ENTRYPOINT ["dotnet", "BabloBudget.Api.dll"]

@@ -12,7 +12,6 @@ services:
       - db
     networks:
       - bablobudgetnetwork
-    command: ["/wait-for-it.sh", "db:5432", "--", "dotnet", "BabloBudgetApp.dll"]
 
   db:
     image: postgres:latest

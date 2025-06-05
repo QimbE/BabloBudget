@@ -146,8 +146,8 @@ public class AccountEntryController(
 
     [HttpGet("GetInDateSpan")]
     public async Task<IActionResult> GetAccountEntriesInDateSpanAsync(
-        [FromQuery] DateOnly startDate,
-        [FromQuery] DateOnly endDate,
+        [FromQuery] DateOnly startDateInclusive,
+        [FromQuery] DateOnly endDateInclusive,
         CancellationToken token)
     {
         var userId = HttpContext.User.TryParseUserId();
@@ -155,15 +155,16 @@ public class AccountEntryController(
         if (userId is null)
             return BadRequest("Unable to identify user");
 
-        if (startDate > endDate)
+
+        if (startDateInclusive > endDateInclusive)
             return BadRequest("Invalid date span");
 
         var result = await dbContextFactory.ExecuteReadonlyAsync<IActionResult>(async dbContext =>
         {
             var accountEntries = (await dbContext.AccountEntries
                 .Where(ae => 
-                    ae.AccountId == userId && 
-                    startDate <= ae.DateUtc && ae.DateUtc <= endDate)
+                    ae.AccountId == userId &&
+                    startDateInclusive <= ae.DateUtc && ae.DateUtc <= endDateInclusive)
                 .ToListAsync(token))
                 .ToImmutableList();
 
@@ -209,8 +210,8 @@ public class AccountEntryController(
 
     [HttpGet("GetByCategoryInDateSpan")]
     public async Task<IActionResult> GetAccountEntriesByCategoriesInDateSpanAsync(
-        [FromQuery] DateOnly startDate,
-        [FromQuery] DateOnly endDate,
+        [FromQuery] DateOnly startDateInclusive,
+        [FromQuery] DateOnly endDateInclusive,
         [FromQuery] Guid? categoryId,
         CancellationToken token)
     {
@@ -219,7 +220,8 @@ public class AccountEntryController(
         if (userId is null)
             return BadRequest("Unable to identify user");
 
-        if (startDate > endDate)
+
+        if (startDateInclusive > endDateInclusive)
             return BadRequest("Invalid date span");
 
         var result = await dbContextFactory.ExecuteReadonlyAsync<IActionResult>(async dbContext =>
@@ -234,7 +236,7 @@ public class AccountEntryController(
             var accountEntries = (await dbContext.AccountEntries
                 .Where(ae =>
                     ae.AccountId == userId &&
-                    startDate <= ae.DateUtc && ae.DateUtc <= endDate &&
+                    startDateInclusive <= ae.DateUtc && ae.DateUtc <= endDateInclusive &&
                     ae.CategoryId == categoryId)
                 .ToListAsync(token))
                 .ToImmutableList();

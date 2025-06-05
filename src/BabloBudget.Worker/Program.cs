@@ -9,7 +9,10 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         var configuration = builder.Configuration;
-        builder.Services.AddLayers(configuration);
+
+        builder.Services
+            .AddLayers(configuration)
+            .AddWorker(configuration);
 
         var app = builder.Build();
 

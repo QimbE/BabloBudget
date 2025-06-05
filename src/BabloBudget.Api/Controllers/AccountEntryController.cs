@@ -155,6 +155,7 @@ public class AccountEntryController(
         if (userId is null)
             return BadRequest("Unable to identify user");
 
+
         if (startDateInclusive > endDateInclusive)
             return BadRequest("Invalid date span");
 
@@ -218,6 +219,7 @@ public class AccountEntryController(
 
         if (userId is null)
             return BadRequest("Unable to identify user");
+
 
         if (startDateInclusive > endDateInclusive)
             return BadRequest("Invalid date span");

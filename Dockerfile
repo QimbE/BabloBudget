@@ -18,6 +18,7 @@ ENTRYPOINT ["dotnet", "test", "-c", "Release", "--no-build"]
 ### publish
 FROM build as publish
 RUN dotnet publish "./src/BabloBudget.Api/BabloBudget.Api.csproj" -c Release --output /dist/services --no-restore
+RUN dotnet publish "./src/BabloBudget.Worker/BabloBudget.Worker.csproj" -c Release --output /dist/worker --no-restore
 
 ### services
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS services
@@ -26,3 +27,11 @@ ENV ASPNETCORE_URLS=http://+:8018
 WORKDIR /app
 COPY --from=publish /dist/services .
 ENTRYPOINT ["dotnet", "BabloBudget.Api.dll"]
+
+### worker
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS worker
+EXPOSE 8019
+ENV ASPNETCORE_URLS=http://+:8019
+WORKDIR /app
+COPY --from=publish /dist/worker .
+ENTRYPOINT ["dotnet", "BabloBudget.Worker.dll"]

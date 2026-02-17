@@ -15,10 +15,11 @@ public class AnalyticsController(
     IDateTimeProvider dateTimeProvider)
     : ControllerBase
 {
-    [HttpGet("GetExpensesByPeriod")]
-    public async Task<IActionResult> GetExpensesByPeriodAsync(
+    [HttpGet("GetSumsByPeriod")]
+    public async Task<IActionResult> GetSumsByPeriodAsync(
         [FromQuery] TimeGrouping periodType,
         [FromQuery] int periodsCount,
+        [FromQuery] FlowType flowType,
         [FromQuery] Guid? categoryId,
         CancellationToken token)
     {
@@ -49,8 +50,9 @@ public class AnalyticsController(
             if (periodType == TimeGrouping.Month)
                 endDate = endDate.AddMonths(1).AddDays(-1);
 
-            var query = dbContext.AccountEntries
-                .Where(ae => ae.AccountId == userId && ae.Sum < 0);
+            var query = flowType == FlowType.Expense
+                ? dbContext.AccountEntries.Where(ae => ae.AccountId == userId && ae.Sum < 0)
+                : dbContext.AccountEntries.Where(ae => ae.AccountId == userId && ae.Sum > 0);
 
             if (categoryId is not null)
                 query = query.Where(ae => ae.CategoryId == categoryId);
@@ -66,7 +68,7 @@ public class AnalyticsController(
                 {
                     periods[periodIndex] = periods[periodIndex] with
                     {
-                        TotalExpenses = periods[periodIndex].TotalExpenses + Math.Abs(entry.Sum)
+                        Total = periods[periodIndex].Total + Math.Abs(entry.Sum)
                     };
                 }
             }
@@ -76,9 +78,9 @@ public class AnalyticsController(
         cancellationToken: token);
     }
 
-    private static List<ExpensePeriodResult> GeneratePeriods(DateOnly today, TimeGrouping periodType, int count)
+    private static List<PeriodSumResult> GeneratePeriods(DateOnly today, TimeGrouping periodType, int count)
     {
-        var result = new List<ExpensePeriodResult>(count);
+        var result = new List<PeriodSumResult>(count);
 
         for (int i = 0; i < count; i++)
         {
@@ -89,7 +91,7 @@ public class AnalyticsController(
                 _ => throw new ArgumentOutOfRangeException(nameof(periodType))
             };
 
-            result.Add(new ExpensePeriodResult(date, 0));
+            result.Add(new PeriodSumResult(date, 0));
         }
 
         return result;
@@ -112,9 +114,15 @@ public enum TimeGrouping
     Month = 1
 }
 
-public sealed record ExpensePeriodResult(
+public enum FlowType
+{
+    Expense = 0,
+    Income = 1
+}
+
+public sealed record PeriodSumResult(
     [property: JsonPropertyName("date")]
     DateOnly Date,
 
-    [property: JsonPropertyName("totalExpenses")]
-    decimal TotalExpenses);
+    [property: JsonPropertyName("total")]
+    decimal Total);

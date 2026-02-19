@@ -78,6 +78,65 @@ public class AnalyticsController(
         cancellationToken: token);
     }
 
+    [HttpGet("GetCategoryPercentages")]
+    public async Task<IActionResult> GetCategoryPercentagesAsync(
+        [FromQuery] TimeGrouping periodType,
+        [FromQuery] int periodsCount,
+        [FromQuery] FlowType flowType,
+        CancellationToken token)
+    {
+        var userId = HttpContext.User.TryParseUserId();
+
+        if (userId is null)
+            return BadRequest("Unable to identify user");
+
+        if (periodsCount <= 0)
+            return BadRequest("Periods count must be positive");
+
+        return await dbContextFactory.ExecuteReadonlyAsync<IActionResult>(async dbContext =>
+        {
+            var today = dateTimeProvider.UtcNowDateOnly;
+            var periods = GeneratePeriods(today, periodType, periodsCount);
+
+            var startDate = periods[^1].Date;
+            var endDate = periods[0].Date;
+            if (periodType == TimeGrouping.Month)
+                endDate = endDate.AddMonths(1).AddDays(-1);
+
+            var query = flowType == FlowType.Expense
+                ? dbContext.AccountEntries.Where(ae => ae.AccountId == userId && ae.Sum < 0)
+                : dbContext.AccountEntries.Where(ae => ae.AccountId == userId && ae.Sum > 0);
+
+            query = query.Where(ae => ae.DateUtc >= startDate && ae.DateUtc <= endDate);
+
+            var entriesWithCategories = await (
+                from entry in query
+                join category in dbContext.Categories on entry.CategoryId equals category.Id into categoryJoin
+                from category in categoryJoin.DefaultIfEmpty()
+                select new { Entry = entry, CategoryName = category != null ? category.Name : "Без категории" }
+            ).ToListAsync(token);
+
+            if (!entriesWithCategories.Any())
+                return Ok(Array.Empty<CategoryPercentageResult>());
+
+            var totalSum = entriesWithCategories.Sum(e => Math.Abs(e.Entry.Sum));
+
+            if (totalSum == 0)
+                return Ok(Array.Empty<CategoryPercentageResult>());
+
+            var categoryGroups = entriesWithCategories
+                .GroupBy(e => e.CategoryName)
+                .Select(g => new CategoryPercentageResult(
+                    g.Key,
+                    Math.Round((g.Sum(e => Math.Abs(e.Entry.Sum)) / totalSum) * 100, 2)))
+                .OrderByDescending(r => r.Percentage)
+                .ToList();
+
+            return Ok(categoryGroups);
+        },
+        cancellationToken: token);
+    }
+
     private static List<PeriodSumResult> GeneratePeriods(DateOnly today, TimeGrouping periodType, int count)
     {
         var result = new List<PeriodSumResult>(count);
@@ -126,3 +185,10 @@ public sealed record PeriodSumResult(
 
     [property: JsonPropertyName("total")]
     decimal Total);
+
+public sealed record CategoryPercentageResult(
+    [property: JsonPropertyName("categoryName")]
+    string CategoryName,
+
+    [property: JsonPropertyName("percentage")]
+    decimal Percentage);

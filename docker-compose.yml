@@ -30,7 +30,7 @@ services:
       - bablobudgetnetwork
 
   db:
-    image: postgres:latest
+    image: postgres:16
     container_name: bablobudgetdb
     environment:
       - POSTGRES_USER=postgres

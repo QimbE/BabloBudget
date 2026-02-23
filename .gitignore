@@ -1,0 +1,15 @@
+/node_modules/
+
+/dist/
+/.vite/
+
+npm-debug.log*
+
+*.tsbuildinfo
+
+/.idea/
+
+package-lock.json
+
+*.log
+

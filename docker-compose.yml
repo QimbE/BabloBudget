@@ -1,11 +1,8 @@
 services:
   bablobudget-services:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: services
+    image: likeitbro/bablobudget:services
     ports:
-      - "8018:8018" 
+      - "8018:8018"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=db;Database=${POSTGRES_DB};Username=postgres;Password=${POSTGRES_PASSWORD};"
@@ -13,12 +10,9 @@ services:
       - db
     networks:
       - bablobudgetnetwork
-  
+
   bablobudget-worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: worker
+    image: likeitbro/bablobudget:worker
     ports:
       - "8019:8019"
     environment:
@@ -42,10 +36,3 @@ services:
       - database:/var/lib/postgresql/data
     ports:
       - "5433:5432"
-
-volumes:
-  database:
-
-networks:
-  bablobudgetnetwork:
-    driver: bridge
